@@ -1,3 +1,42 @@
+# Programming
+
+------
+
+# It's Social
+
+------
+
+### Good Morning, Garrett
+
+```erlang
+handle_amqp(#message{name="db.create"}=Msg, State) ->
+    e2_log:info({db_create, stax_service:to_proplist(Msg)}),
+    Name = get_required_attr("name", Msg),
+    verify_db_name(Name),
+    User = get_required_attr("user", Msg),
+    Pwd = get_required_attr("password", Msg),
+    Options =
+        case get_attr("cluster", Msg) of
+            undefined -> [];
+            Cluster -> [{cluster, Cluster}]
+        end,
+    case stax_mysql_controller:create_database(
+           Name, User, Pwd, Options) of
+        {ok, HostInfo} ->
+            Attrs = [{"slaves", ""}|host_info_attrs(HostInfo)],
+            {reply, message_response(Msg, Attrs), State};
+        {error, Err} ->
+            e2_log:error({db_create, Err, erlang:get_stacktrace()}),
+            {error, Err, State}
+    end.
+```
+
+------
+
+## Making our code social
+
+------
+
 ### What's Going On Here?
 
 ```erlang
@@ -44,6 +83,10 @@ handle_amqp(#message{name="db.create"}=Msg, State) ->
 
 ------
 
+### Actualling Handling *DB Create*
+
+------
+
 ### What's Going On Here?
 
 ```erlang
@@ -82,16 +125,21 @@ handle_db_create_msg(Msg, State) ->
 
 ------
 
-### Make Logging Obvious
-
-```erlang
-log_info(Operation, Msg) ->
-    e2_log:info({Operation, stax_service:to_proplist(Msg)}).
-```
+# Done!
 
 ------
 
-### *Create DB* Args, Naively
+# <strike>Done!</strike>
+
+## Not Just Yet
+
+------
+
+## The *DB Create* Arguments
+
+------
+
+### *DB Create* Args, Naively
 
 ```erlang
 db_create_args(Msg) ->
@@ -113,27 +161,7 @@ db_create_args(Msg) ->
 
 ------
 
-### Erlang *Record* --- for the Args
-
-Define It
-
-```erlang
--record(db_create, {name, user, pwd, options}).
-```
-
-Use It
-
-```erlang
-#db_create{
-  name=Name,
-  user=User,
-  pwd=Pwd,
-  options=Options}
-```
-
-------
-
-### *Create DB* Args, Clearer
+### *DB Create* Args, Clearer
 
 ```erlang
 db_create_args(Msg) ->
@@ -146,7 +174,7 @@ db_create_args(Msg) ->
 
 ------
 
-### *Create DB* Args, Clearer Still
+### *DB Create* Args, Clearer Still
 
 ```erlang
 db_create_args(Msg) ->
@@ -162,7 +190,7 @@ db_create_args(Msg) ->
 ### *Name* Arg
 
 ```erlang
-db_create_name_arg(Msg, Args) ->
+db_create_name_arg(Msg) ->
     verify_db_name(get_required_attr("name", Msg)).
 ```
 
@@ -171,7 +199,7 @@ db_create_name_arg(Msg, Args) ->
 ### *User* Arg
 
 ```erlang
-db_create_user_arg(Msg, Args) ->
+db_create_user_arg(Msg) ->
     get_required_attr("user", Msg).
 ```
 
@@ -180,7 +208,7 @@ db_create_user_arg(Msg, Args) ->
 ### *Password* Arg
 
 ```erlang
-db_create_pwd_arg(Msg, Args) ->
+db_create_pwd_arg(Msg) ->
     get_required_attr("password", Msg).
 ```
 
@@ -189,7 +217,7 @@ db_create_pwd_arg(Msg, Args) ->
 ### *Options* Arg
 
 ```erlang
-db_create_options_arg(Msg, Args) ->
+db_create_options_arg(Msg) ->
     case get_attr("cluster", Msg) of
         undefined -> [];
         Cluster -> [{cluster, Cluster}]
@@ -201,7 +229,7 @@ db_create_options_arg(Msg, Args) ->
 ### *Options* Arg, Case Free
 
 ```erlang
-db_create_options_arg(Msg, Args) ->
+db_create_options_arg(Msg) ->
     cluster_option(get_attr("cluster", Msg)).
 ```
 
@@ -220,7 +248,7 @@ cluster_option(Cluster) -> [{cluster, Cluster}].
 
 ------
 
-### Recap
+### Back to Our Message Handler
 
 ```erlang
 handle_db_create_msg(Msg, State) ->
@@ -240,7 +268,7 @@ db_create(#db_create{name=Name, user=User, pwd=Pwd, options=Opts}) ->
 
 ------
 
-### Handling the Result --- What's Going On?
+### Handling the Result --- Original Code
 
 ```erlang
     case stax_mysql_controller:create_database(
@@ -256,7 +284,7 @@ db_create(#db_create{name=Name, user=User, pwd=Pwd, options=Opts}) ->
 
 ------
 
-### Handling the Result --- What's Going On?
+### Handling the Result --- A Function
 
 ```erlang
 handle_db_create({ok, HostInfo}, Msg, State) ->
@@ -269,7 +297,7 @@ handle_db_create({error, Err}, _Msg, State) ->
 
 ------
 
-### This is What's Going On
+### Handling the Result --- Clearer Function
 
 ```erlang
 handle_db_create({ok, HostInfo}, Msg, State) ->
@@ -279,7 +307,7 @@ handle_db_create({error, Err}, _Msg, State) ->
 ```
 ------
 
-### What's Going On Here?
+### Handling the Success Case
 
 ```erlang
 handle_db_created(HostInfo, Msg, State) ->
@@ -289,7 +317,7 @@ handle_db_created(HostInfo, Msg, State) ->
 
 ------
 
-### This is What's Going On
+### Handling the Success Case - Clearer
 
 ```erlang
 handle_db_created(HostInfo, Msg, State) ->
@@ -322,7 +350,7 @@ apply_db_created_legacy_attrs(Attrs) -> [{"slaves", ""}|Attrs].
 
 ------
 
-### Error Response
+### Handling the Error Case
 
 ```erlang
 handle_db_create_error(Err, State) ->
@@ -332,40 +360,12 @@ handle_db_create_error(Err, State) ->
 
 ------
 
-### Error Response, Clearer
+### Handling the Error Case --- Clearer
 
 ```erlang
 handle_db_create_error(Err, State) ->
     log_error(db_create, Err),
     {error, Err, State}.
-```
-
-------
-
-### Logging an Error
-
-#### Can You Spot the Bug?
-
-```erlang
-log_error(Type, Err) ->
-    e2_log:error({Type, Err, erlang:get_stacktrace()}).
-```
-
-------
-
-### `erlang:get_stacktrace/0`
-
-> Get the call stack back-trace (stacktrace) of the last exception in the
-> calling process… If there has not been any exceptions in a process, the
-> stacktrace is [].
-
-------
-
-### Correct Error Logging
-
-```erlang
-log_error(Type, Err) ->
-    e2_log:error({Type, Err}).
 ```
 
 ------
@@ -418,16 +418,16 @@ db_create_args(Msg) ->
       pwd     = db_create_pwd_arg(Msg),
       options = db_create_options_arg(Msg)}.
 
-db_create_name_arg(Msg, Args) ->
+db_create_name_arg(Msg) ->
     verify_db_name(get_required_attr("name", Msg)).
 
-db_create_user_arg(Msg, Args) ->
+db_create_user_arg(Msg) ->
     get_required_attr("user", Msg).
 
-db_create_pwd_arg(Msg, Args) ->
+db_create_pwd_arg(Msg) ->
     get_required_attr("password", Msg).
 
-db_create_options_arg(Msg, Args) ->
+db_create_options_arg(Msg) ->
     cluster_option(get_attr("cluster", Msg)).
 
 cluster_option(undefined) -> [];
@@ -461,6 +461,22 @@ log_error(Type, Err) ->
 
 ------
 
+## Lots More Functions!
+
+------
+
+## Much Shorter Functions
+
+------
+
+## Clear, Respectful, Empathetic, Human Code
+
+------
+
+# Social
+
+------
+
 ### The Big Picture
 
 ```erlang
@@ -485,16 +501,16 @@ db_create_args(Msg) ->
       pwd     = db_create_pwd_arg(Msg),
       options = db_create_options_arg(Msg)}.
 
-db_create_name_arg(Msg, Args) ->
+db_create_name_arg(Msg) ->
     verify_db_name(get_required_attr("name", Msg)).
 
-db_create_user_arg(Msg, Args) ->
+db_create_user_arg(Msg) ->
     get_required_attr("user", Msg).
 
-db_create_pwd_arg(Msg, Args) ->
+db_create_pwd_arg(Msg) ->
     get_required_attr("password", Msg).
 
-db_create_options_arg(Msg, Args) ->
+db_create_options_arg(Msg) ->
     cluster_option(get_attr("cluster", Msg)).
 
 cluster_option(undefined) -> [];
@@ -543,15 +559,25 @@ log_error(Type, Err) ->
 
 ------
 
-# Too Many Functions!
-
-------
-
-![](dog.jpg)
+## Too many functions
 
 ------
 
 ## You can do this with any language
+
+------
+
+## Why
+
+- It's social
+- <strike>Easier</strike> Possible to change
+- <strike>Easier</strike> Possible to debug
+- Easier to test
+- Less testing (less fear)
+
+------
+
+# Questions?
 
 ------
 
