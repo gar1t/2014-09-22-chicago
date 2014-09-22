@@ -465,7 +465,12 @@ log_error(Type, Err) ->
 
 ------
 
-## Much Shorter Functions
+## More Lines of Code!
+
+------
+
+
+## *Much* Shorter Functions
 
 ------
 
@@ -559,21 +564,17 @@ log_error(Type, Err) ->
 
 ------
 
-## Too many functions
-
-------
-
-## You can do this with any language
-
-------
-
-## Why
+## Why We Care
 
 - It's social
 - <strike>Easier</strike> Possible to change
 - <strike>Easier</strike> Possible to debug
 - Easier to test
 - Less testing (less fear)
+
+------
+
+# Objections
 
 ------
 
