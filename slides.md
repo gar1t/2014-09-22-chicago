@@ -83,7 +83,7 @@ handle_amqp(#message{name="db.create"}=Msg, State) ->
 
 ------
 
-### Actualling Handling *DB Create*
+## Handling *DB Create*
 
 ------
 
@@ -114,7 +114,7 @@ handle_db_create_msg(Msg, State) ->
 
 ------
 
-### This is What's Going On
+### This
 
 ```erlang
 handle_db_create_msg(Msg, State) ->
@@ -226,7 +226,7 @@ db_create_options_arg(Msg) ->
 
 ------
 
-### *Options* Arg, Case Free
+### *Options* Arg, Clearer
 
 ```erlang
 db_create_options_arg(Msg) ->
@@ -243,7 +243,7 @@ db_create_options_arg(Msg) ->
 
 ```erlang
 cluster_option(undefined) -> [];
-cluster_option(Cluster) -> [{cluster, Cluster}].
+cluster_option(Cluster)   -> [{cluster, Cluster}].
 ```
 
 ------
@@ -259,16 +259,11 @@ handle_db_create_msg(Msg, State) ->
 
 ------
 
-### Pass-Through to External Function
-
-```erlang
-db_create(#db_create{name=Name, user=User, pwd=Pwd, options=Opts}) ->
-    stax_mysql_controller:create_database(Name, User, Pwd, Opts).
-```
+## Creating the DB
 
 ------
 
-### Handling the Result --- Original Code
+### Original Code
 
 ```erlang
     case stax_mysql_controller:create_database(
@@ -284,7 +279,16 @@ db_create(#db_create{name=Name, user=User, pwd=Pwd, options=Opts}) ->
 
 ------
 
-### Handling the Result --- A Function
+### Pass-Through to External Function
+
+```erlang
+db_create(#db_create{name=Name, user=User, pwd=Pwd, options=Opts}) ->
+    stax_mysql_controller:create_database(Name, User, Pwd, Opts).
+```
+
+------
+
+### Handling the Result
 
 ```erlang
 handle_db_create({ok, HostInfo}, Msg, State) ->
@@ -297,7 +301,7 @@ handle_db_create({error, Err}, _Msg, State) ->
 
 ------
 
-### Handling the Result --- Clearer Function
+### Handling the Result, Clearer
 
 ```erlang
 handle_db_create({ok, HostInfo}, Msg, State) ->
@@ -317,7 +321,7 @@ handle_db_created(HostInfo, Msg, State) ->
 
 ------
 
-### Handling the Success Case - Clearer
+### Handling the Success Case, Clearer
 
 ```erlang
 handle_db_created(HostInfo, Msg, State) ->
@@ -360,7 +364,7 @@ handle_db_create_error(Err, State) ->
 
 ------
 
-### Handling the Error Case --- Clearer
+### Handling the Error Case, Clearer
 
 ```erlang
 handle_db_create_error(Err, State) ->
@@ -399,7 +403,8 @@ handle_amqp(#message{name="db.create"}=Msg, State) ->
 
 ### The New Functions
 
-```erlang
+<table><tr><td>
+<pre><code class="erlang" style="font-size:75%">
 handle_amqp(#message{name="db.create"}=Msg, State) ->
     handle_db_create_msg(Msg, State).
 
@@ -429,9 +434,10 @@ db_create_pwd_arg(Msg) ->
 
 db_create_options_arg(Msg) ->
     cluster_option(get_attr("cluster", Msg)).
-
+</code></pre>
+</td><td><pre><code class="erlang" style="font-size:75%">
 cluster_option(undefined) -> [];
-cluster_option(Cluster) -> [{cluster, Cluster}].
+cluster_option(Cluster)   -> [{cluster, Cluster}].
 
 db_create(#db_create{name=Name, user=User, pwd=Pwd, options=Opts}) ->
     stax_mysql_controller:create_database(Name, User, Pwd, Opts).
@@ -457,7 +463,10 @@ handle_db_create_error(Err, State) ->
 
 log_error(Type, Err) ->
     e2_log:error({Type, Err}).
-```
+
+
+</code></pre>
+</td></tr></table>
 
 ------
 
@@ -519,7 +528,7 @@ db_create_options_arg(Msg) ->
     cluster_option(get_attr("cluster", Msg)).
 
 cluster_option(undefined) -> [];
-cluster_option(Cluster) -> [{cluster, Cluster}].
+cluster_option(Cluster)   -> [{cluster, Cluster}].
 ```
 
 ------
