@@ -334,8 +334,8 @@ handle_db_created(HostInfo, Msg, State) ->
 
 ```erlang
 db_created_response(HostInfo, Msg) ->
-    HostInfo = host_info_attrs(HostInfo),
-    Attrs = apply_db_created_legacy_attrs(HostInfo),
+    HostInfoAttrs = host_info_attrs(HostInfo),
+    Attrs = apply_db_created_legacy_attrs(HostInfoAttrs),
     message_response(Msg, Attrs).
 ```
 ------
@@ -451,8 +451,8 @@ handle_db_created(HostInfo, Msg, State) ->
     {reply, db_created_response(HostInfo, Msg), State}.
 
 db_created_response(HostInfo, Msg) ->
-    HostInfo = host_info_attrs(HostInfo),
-    Attrs = apply_db_created_legacy_attrs(HostInfo),
+    HostInfoAttrs = host_info_attrs(HostInfo),
+    Attrs = apply_db_created_legacy_attrs(HostInfoAttrs),
     message_response(Msg, Attrs).
 
 apply_db_created_legacy_attrs(Attrs) -> [{"slaves", ""}|Attrs].
@@ -558,8 +558,8 @@ handle_db_create_error(Err, State) ->
 
 ```erlang
 db_created_response(HostInfo, Msg) ->
-    HostInfo = host_info_attrs(HostInfo),
-    Attrs = apply_db_created_legacy_attrs(HostInfo),
+    HostInfoAttrs = host_info_attrs(HostInfo),
+    Attrs = apply_db_created_legacy_attrs(HostInfoAttrs),
     message_response(Msg, Attrs).
 
 apply_db_created_legacy_attrs(Attrs) -> [{"slaves", ""}|Attrs].
@@ -588,65 +588,3 @@ log_error(Type, Err) ->
 ------
 
 # Questions?
-
-------
-
-### Break 1 Winners
-
-```
-886710
-886711
-886714
-886716
-886739
-886749
-886753
-886768
-886781
-886782
-886786
-```
-
-------
-
-### Break 2 Winners
-
-```
-886791
-886797
-886804
-886822
-886826
-886848
-886861
-886876
-886890
-886896
-886909
-```
-
-------
-
-### Extra Winners
-
-```
-886705
-886715
-886726
-886773
-886775
-886777
-886789
-886800
-886815
-886824
-886830
-886839
-886863
-886868
-886878
-886882
-886906
-886907
-
-```
